@@ -30,9 +30,7 @@
  * @name png_support
  * @module
  */
-(function(jsPDFAPI, global) {
-  "use strict";
-
+export default function(jsPDFAPI, { PNG, FlateStream }) {
   /*
    * @see http://www.w3.org/TR/PNG-Chunks.html
    *
@@ -71,12 +69,12 @@
      4       Paeth
    */
 
-  var doesNotHavePngJS = function() {
-    return (
-      typeof global.PNG !== "function" ||
-      typeof global.FlateStream !== "function"
-    );
-  };
+  // var doesNotHavePngJS = function() {
+  //   return (
+  //     typeof global.PNG !== "function" ||
+  //     typeof global.FlateStream !== "function"
+  //   );
+  // };
 
   var canCompress = function(value) {
     return value !== jsPDFAPI.image_compression.NONE && hasCompressionJS();
@@ -346,11 +344,11 @@
       imageData = new Uint8Array(imageData);
 
     if (this.__addimage__.isArrayBufferView(imageData)) {
-      if (doesNotHavePngJS()) {
-        throw new Error("PNG support requires png.js and zlib.js");
-      }
+      // if (doesNotHavePngJS()) {
+      //   throw new Error("PNG support requires png.js and zlib.js");
+      // }
 
-      image = new PNG(imageData);
+      image = new PNG(imageData, { FlateStream });
       imageData = image.imgData;
       bitsPerComponent = image.bits;
       colorSpace = image.colorSpace;
@@ -531,14 +529,4 @@
       };
     }
   };
-})(
-  jsPDF.API,
-  (typeof self !== "undefined" && self) ||
-    (typeof window !== "undefined" && window) ||
-    (typeof global !== "undefined" && global) ||
-    Function('return typeof this === "object" && this.content')() ||
-    Function("return this")()
-);
-// `self` is undefined in Firefox for Android content script context
-// while `this` is nsIContentFrameMessageManager
-// with an attribute `content` that corresponds to the window
+};

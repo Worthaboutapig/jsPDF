@@ -3,7 +3,8 @@
   "version": "1.5.3",
   "homepage": "https://github.com/mrrio/jspdf",
   "description": "PDF Document creation from JavaScript",
-  "main": "dist/jspdf.min.js",
+  "main": "./src/index.js",
+  "module": "./src/index.js",
   "bin": {
     "jsPDF-makeFonts": "makeFonts.js"
   },
@@ -93,5 +94,6 @@
     "prettier": "prettier --write build.js \"{spec,examples,src}/**/*.js\"",
     "delete-docs": "node deletedocs.js",
     "generate-docs": "./node_modules/.bin/jsdoc -c jsdoc.json --readme README.md"
-  }
+  },
+  "type": "module"
 }
