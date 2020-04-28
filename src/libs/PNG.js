@@ -184,6 +184,7 @@ export class PNG {
       }
     }
   }
+
   read(bytes) {
     var i, _i, _results;
     _results = [];
@@ -192,6 +193,7 @@ export class PNG {
     }
     return _results;
   }
+
   readUInt32() {
     var b1, b2, b3, b4;
     b1 = this.data[this.pos++] << 24;
@@ -200,12 +202,14 @@ export class PNG {
     b4 = this.data[this.pos++];
     return b1 | b2 | b3 | b4;
   }
+
   readUInt16() {
     var b1, b2;
     b1 = this.data[this.pos++] << 8;
     b2 = this.data[this.pos++];
     return b1 | b2;
   }
+
   decodePixels(data) {
     var pixelBytes = this.pixelBitlength / 8;
     var fullPixels = new Uint8Array(this.width * this.height * pixelBytes);
@@ -346,6 +350,7 @@ export class PNG {
     }
     return fullPixels;
   }
+
   decodePalette() {
     var c, i, length, palette, pos, ret, transparency, _i, _ref, _ref1;
     palette = this.palette;
@@ -362,6 +367,7 @@ export class PNG {
     }
     return ret;
   }
+
   copyToImageData(imageData, pixels) {
     var alpha, colors, data, i, input, j, k, length, palette, v, _ref;
     colors = this.colors;
@@ -401,12 +407,14 @@ export class PNG {
       }
     }
   }
+
   decode() {
     var ret;
     ret = new Uint8Array(this.width * this.height * 4);
     this.copyToImageData(ret, this.decodePixels());
     return ret;
   }
+
   decodeFrames(ctx) {
     var frame, i, imageData, pixels, _i, _len, _ref, _results;
     if (!this.animation) {
@@ -424,6 +432,7 @@ export class PNG {
     }
     return _results;
   }
+
   renderFrame(ctx, number) {
     var frame, frames, prev;
     frames = this.animation.frames;
@@ -443,6 +452,7 @@ export class PNG {
     }
     return ctx.drawImage(frame.image, frame.xOffset, frame.yOffset);
   }
+
   animate(ctx) {
     var doFrame, frameNumber, frames, numFrames, numPlays, _ref, _this = this;
     frameNumber = 0;
@@ -460,10 +470,12 @@ export class PNG {
       }
     })();
   }
+
   stopAnimation() {
     var _ref;
     return clearTimeout((_ref = this.animation) != null ? _ref._timeout : void 0);
   }
+
   render(canvas) {
     var ctx, data;
     if (canvas._png) {
@@ -485,44 +497,31 @@ export class PNG {
   }
 }
 
-
-
-
-
-
-
-
-  var hasBrowserCanvas = function() {
-    if (Object.prototype.toString.call(global) === "[object Window]") {
-      try {
-        scratchCanvas = global.document.createElement("canvas");
-        scratchCtx = scratchCanvas.getContext("2d");
-      } catch (e) {
-        return false;
-      }
-      return true;
+var hasBrowserCanvas = function() {
+  if (Object.prototype.toString.call(global) === "[object Window]") {
+    try {
+      scratchCanvas = global.document.createElement("canvas");
+      scratchCtx = scratchCanvas.getContext("2d");
+    } catch (e) {
+      return false;
     }
-    return false;
-  };
+    return true;
+  }
+  return false;
+};
 
-  hasBrowserCanvas();
+hasBrowserCanvas();
 
-  makeImage = function(imageData) {
-    if (hasBrowserCanvas() === true) {
-      var img;
-      scratchCtx.width = imageData.width;
-      scratchCtx.height = imageData.height;
-      scratchCtx.clearRect(0, 0, imageData.width, imageData.height);
-      scratchCtx.putImageData(imageData, 0, 0);
-      img = new Image();
-      img.src = scratchCanvas.toDataURL();
-      return img;
-    }
-    throw new Error("This method requires a Browser with Canvas-capability.");
-  };
-
-
-
-
-
-
+makeImage = function(imageData) {
+  if (hasBrowserCanvas() === true) {
+    var img;
+    scratchCtx.width = imageData.width;
+    scratchCtx.height = imageData.height;
+    scratchCtx.clearRect(0, 0, imageData.width, imageData.height);
+    scratchCtx.putImageData(imageData, 0, 0);
+    img = new Image();
+    img.src = scratchCanvas.toDataURL();
+    return img;
+  }
+  throw new Error("This method requires a Browser with Canvas-capability.");
+};

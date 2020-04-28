@@ -31,8 +31,7 @@
  * @name split_text_to_size
  * @module
  */
-(function(API) {
-  "use strict";
+export function split_text_to_size(API) {
   /**
    * Returns an array of length matching length of the 'word' string, with each
    * cell occupied by the width of the char in that position.
@@ -391,4 +390,4 @@
 
     return output;
   };
-})(jsPDF.API);
+};

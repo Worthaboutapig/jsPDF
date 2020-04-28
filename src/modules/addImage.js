@@ -32,7 +32,7 @@
  * @name addImage
  * @module
  */
-export default function(jsPDFAPI, { atob, btoa }) {
+export function addImage(jsPDFAPI, { atob, btoa }) {
   var namespace = "addImage_";
   jsPDFAPI.__addimage__ = {};
 

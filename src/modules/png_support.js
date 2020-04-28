@@ -30,7 +30,7 @@
  * @name png_support
  * @module
  */
-export default function(jsPDFAPI, { PNG, FlateStream }) {
+ export function png_support(jsPDFAPI, { PNG, FlateStream }) {
   /*
    * @see http://www.w3.org/TR/PNG-Chunks.html
    *
