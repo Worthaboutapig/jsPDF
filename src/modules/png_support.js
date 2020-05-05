@@ -30,7 +30,7 @@
  * @name png_support
  * @module
  */
- export function png_support(jsPDFAPI, { PNG, FlateStream }) {
+export function png_support(jsPDFAPI, { PNG, FlateStream }) {
   /*
    * @see http://www.w3.org/TR/PNG-Chunks.html
    *
@@ -76,15 +76,22 @@
   //   );
   // };
 
-  var canCompress = function(value) {
+  if (!PNG) {
+    throw new Error("PNG required");
+  }
+
+  if (!FlateStream) {
+    throw new Error("FlateStream required");
+  }
+  var canCompress = function (value) {
     return value !== jsPDFAPI.image_compression.NONE && hasCompressionJS();
   };
 
-  var hasCompressionJS = function() {
+  var hasCompressionJS = function () {
     return typeof Deflater === "function";
   };
 
-  var compressBytes = function(bytes, lineLength, colorsPerPixel, compression) {
+  var compressBytes = function (bytes, lineLength, colorsPerPixel, compression) {
     var level = 5;
     var filter_method = filterUp;
 
@@ -105,12 +112,7 @@
         break;
     }
 
-    bytes = applyPngFilterMethod(
-      bytes,
-      lineLength,
-      colorsPerPixel,
-      filter_method
-    );
+    bytes = applyPngFilterMethod(bytes, lineLength, colorsPerPixel, filter_method);
 
     var header = new Uint8Array(createZlibHeader(level));
     var checksum = jsPDF.API.adler32cs.fromBuffer(bytes.buffer);
@@ -134,7 +136,7 @@
     return jsPDFAPI.__addimage__.arrayBufferToBinaryString(cmpd);
   };
 
-  var createZlibHeader = function(level) {
+  var createZlibHeader = function (level) {
     /*
      * @see http://www.ietf.org/rfc/rfc1950.txt for zlib header
      */
@@ -148,12 +150,7 @@
     return [120, hdr & 0xff & 0xff];
   };
 
-  var applyPngFilterMethod = function(
-    bytes,
-    lineLength,
-    colorsPerPixel,
-    filter_method
-  ) {
+  var applyPngFilterMethod = function (bytes, lineLength, colorsPerPixel, filter_method) {
     var lines = bytes.length / lineLength,
       result = new Uint8Array(bytes.length + lines),
       filter_methods = getFilterMethods(),
@@ -186,7 +183,7 @@
     return result;
   };
 
-  var filterNone = function(line) {
+  var filterNone = function (line) {
     /*var result = new Uint8Array(line.length + 1);
     result[0] = 0;
     result.set(line, 1);*/
@@ -197,7 +194,7 @@
     return result;
   };
 
-  var filterSub = function(line, colorsPerPixel) {
+  var filterSub = function (line, colorsPerPixel) {
     var result = [],
       len = line.length,
       left;
@@ -212,7 +209,7 @@
     return result;
   };
 
-  var filterUp = function(line, colorsPerPixel, prevLine) {
+  var filterUp = function (line, colorsPerPixel, prevLine) {
     var result = [],
       len = line.length,
       up;
@@ -227,7 +224,7 @@
     return result;
   };
 
-  var filterAverage = function(line, colorsPerPixel, prevLine) {
+  var filterAverage = function (line, colorsPerPixel, prevLine) {
     var result = [],
       len = line.length,
       left,
@@ -244,7 +241,7 @@
     return result;
   };
 
-  var filterPaeth = function(line, colorsPerPixel, prevLine) {
+  var filterPaeth = function (line, colorsPerPixel, prevLine) {
     var result = [],
       len = line.length,
       left,
@@ -265,34 +262,30 @@
     return result;
   };
 
-  var paethPredictor = function(left, up, upLeft) {
+  var paethPredictor = function (left, up, upLeft) {
     if (left === up && up === upLeft) {
       return left;
     }
     var pLeft = Math.abs(up - upLeft),
       pUp = Math.abs(left - upLeft),
       pUpLeft = Math.abs(left + up - upLeft - upLeft);
-    return pLeft <= pUp && pLeft <= pUpLeft
-      ? left
-      : pUp <= pUpLeft
-      ? up
-      : upLeft;
+    return pLeft <= pUp && pLeft <= pUpLeft ? left : pUp <= pUpLeft ? up : upLeft;
   };
 
-  var getFilterMethods = function() {
+  var getFilterMethods = function () {
     return [filterNone, filterSub, filterUp, filterAverage, filterPaeth];
   };
 
-  var getIndexOfSmallestSum = function(arrays) {
-    var sum = arrays.map(function(value) {
-      return value.reduce(function(pv, cv) {
+  var getIndexOfSmallestSum = function (arrays) {
+    var sum = arrays.map(function (value) {
+      return value.reduce(function (pv, cv) {
         return pv + Math.abs(cv);
       }, 0);
     });
     return sum.indexOf(Math.min.apply(null, sum));
   };
 
-  var getPredictorFromCompression = function(compression) {
+  var getPredictorFromCompression = function (compression) {
     var predictor;
     switch (compression) {
       case jsPDFAPI.image_compression.FAST:
@@ -319,7 +312,7 @@
    * @function
    * @ignore
    */
-  jsPDFAPI.processPNG = function(imageData, index, alias, compression) {
+  jsPDFAPI.processPNG = function (imageData, index, alias, compression) {
     "use strict";
 
     var colorSpace,
@@ -340,8 +333,7 @@
       i,
       n;
 
-    if (this.__addimage__.isArrayBuffer(imageData))
-      imageData = new Uint8Array(imageData);
+    if (this.__addimage__.isArrayBuffer(imageData)) imageData = new Uint8Array(imageData);
 
     if (this.__addimage__.isArrayBufferView(imageData)) {
       // if (doesNotHavePngJS()) {
@@ -366,12 +358,7 @@
          * processes 8 bit RGBA and grayscale + alpha images
          */
         if (image.bits === 8) {
-          pixels =
-            image.pixelBitlength == 32
-              ? new Uint32Array(image.decodePixels().buffer)
-              : image.pixelBitlength == 16
-              ? new Uint16Array(image.decodePixels().buffer)
-              : new Uint8Array(image.decodePixels().buffer);
+          pixels = image.pixelBitlength == 32 ? new Uint32Array(image.decodePixels().buffer) : image.pixelBitlength == 16 ? new Uint16Array(image.decodePixels().buffer) : new Uint8Array(image.decodePixels().buffer);
           len = pixels.length;
           imgData = new Uint8Array(len * image.colors);
           alphaData = new Uint8Array(len);
@@ -399,9 +386,7 @@
         if (image.bits === 16) {
           pixels = new Uint32Array(image.decodePixels().buffer);
           len = pixels.length;
-          imgData = new Uint8Array(
-            len * (32 / image.pixelBitlength) * image.colors
-          );
+          imgData = new Uint8Array(len * (32 / image.pixelBitlength) * image.colors);
           alphaData = new Uint8Array(len * (32 / image.pixelBitlength));
           hasColors = image.colors > 1;
           i = 0;
@@ -426,12 +411,7 @@
         }
 
         if (canCompress(compression)) {
-          imageData = compressBytes(
-            imgData,
-            image.width * image.colors,
-            image.colors,
-            compression
-          );
+          imageData = compressBytes(imgData, image.width * image.colors, image.colors, compression);
           smask = compressBytes(alphaData, image.width, 1, compression);
         } else {
           imageData = imgData;
@@ -490,25 +470,13 @@
       if (filter === this.decode.FLATE_DECODE) {
         decodeParameters = "/Predictor " + predictor + " ";
       }
-      decodeParameters +=
-        "/Colors " +
-        colors +
-        " /BitsPerComponent " +
-        bitsPerComponent +
-        " /Columns " +
-        image.width;
+      decodeParameters += "/Colors " + colors + " /BitsPerComponent " + bitsPerComponent + " /Columns " + image.width;
 
-      if (
-        this.__addimage__.isArrayBuffer(imageData) ||
-        this.__addimage__.isArrayBufferView(imageData)
-      ) {
+      if (this.__addimage__.isArrayBuffer(imageData) || this.__addimage__.isArrayBufferView(imageData)) {
         imageData = this.__addimage__.arrayBufferToBinaryString(imageData);
       }
 
-      if (
-        (smask && this.__addimage__.isArrayBuffer(smask)) ||
-        this.__addimage__.isArrayBufferView(smask)
-      ) {
+      if ((smask && this.__addimage__.isArrayBuffer(smask)) || this.__addimage__.isArrayBufferView(smask)) {
         smask = this.__addimage__.arrayBufferToBinaryString(smask);
       }
 
@@ -525,8 +493,8 @@
         width: image.width,
         height: image.height,
         bitsPerComponent: bitsPerComponent,
-        colorSpace: colorSpace
+        colorSpace: colorSpace,
       };
     }
   };
-};
+}

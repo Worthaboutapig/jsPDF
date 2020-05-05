@@ -22,25 +22,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+var APNG_BLEND_OP_OVER, APNG_BLEND_OP_SOURCE, APNG_DISPOSE_OP_BACKGROUND, APNG_DISPOSE_OP_NONE, APNG_DISPOSE_OP_PREVIOUS, makeImage, scratchCanvas, scratchCtx;
 
-  var APNG_BLEND_OP_OVER,
-    APNG_BLEND_OP_SOURCE,
-    APNG_DISPOSE_OP_BACKGROUND,
-    APNG_DISPOSE_OP_NONE,
-    APNG_DISPOSE_OP_PREVIOUS,
-    makeImage,
-    scratchCanvas,
-    scratchCtx;
+APNG_DISPOSE_OP_NONE = 0;
 
-  APNG_DISPOSE_OP_NONE = 0;
+APNG_DISPOSE_OP_BACKGROUND = 1;
 
-  APNG_DISPOSE_OP_BACKGROUND = 1;
+APNG_DISPOSE_OP_PREVIOUS = 2;
 
-  APNG_DISPOSE_OP_PREVIOUS = 2;
+APNG_BLEND_OP_SOURCE = 0;
 
-  APNG_BLEND_OP_SOURCE = 0;
-
-  APNG_BLEND_OP_OVER = 1;
+APNG_BLEND_OP_OVER = 1;
 
 export class PNG {
   constructor(data, { FlateStream }) {
@@ -80,7 +72,7 @@ export class PNG {
           this.animation = {
             numFrames: this.readUInt32(),
             numPlays: this.readUInt32() || Infinity,
-            frames: []
+            frames: [],
           };
           break;
         case "PLTE":
@@ -95,7 +87,7 @@ export class PNG {
             width: this.readUInt32(),
             height: this.readUInt32(),
             xOffset: this.readUInt32(),
-            yOffset: this.readUInt32()
+            yOffset: this.readUInt32(),
           };
           delayNum = this.readUInt16();
           delayDen = this.readUInt16() || 100;
@@ -121,11 +113,10 @@ export class PNG {
             case 3:
               palLen = this.palette.length / 3;
               this.transparency.indexed = this.read(chunkSize);
-              if (this.transparency.indexed.length > palLen)
-                throw new Error("More transparent colors than palette size");
+              if (this.transparency.indexed.length > palLen) throw new Error("More transparent colors than palette size");
               /*
-                * According to the PNG spec trns should be increased to the same size as palette if shorter
-                */
+               * According to the PNG spec trns should be increased to the same size as palette if shorter
+               */
               //palShort = 255 - this.transparency.indexed.length;
               palShort = palLen - this.transparency.indexed.length;
               if (palShort > 0) {
@@ -223,9 +214,11 @@ export class PNG {
     }
     data = new this._FlateStream(data);
     data = data.getBytes();
+
     function pass(x0, y0, dx, dy) {
       var abyte, c, col, i, left, length, p, pa, paeth, pb, pc, pixels, row, scanlineLength, upper, upperLeft, _i, _j, _k, _l, _m;
-      var w = Math.ceil((_this.width - x0) / dx), h = Math.ceil((_this.height - y0) / dy);
+      var w = Math.ceil((_this.width - x0) / dx),
+        h = Math.ceil((_this.height - y0) / dy);
       var isFull = _this.width == w && _this.height == h;
       scanlineLength = pixelBytes * w;
       pixels = isFull ? fullPixels : new Uint8Array(scanlineLength * h);
@@ -250,11 +243,7 @@ export class PNG {
             for (i = _k = 0; _k < scanlineLength; i = _k += 1) {
               abyte = data[pos++];
               col = (i - (i % pixelBytes)) / pixelBytes;
-              upper =
-                row &&
-                pixels[(row - 1) * scanlineLength +
-                col * pixelBytes +
-                (i % pixelBytes)];
+              upper = row && pixels[(row - 1) * scanlineLength + col * pixelBytes + (i % pixelBytes)];
               pixels[c++] = (upper + abyte) % 256;
             }
             break;
@@ -263,11 +252,7 @@ export class PNG {
               abyte = data[pos++];
               col = (i - (i % pixelBytes)) / pixelBytes;
               left = i < pixelBytes ? 0 : pixels[c - pixelBytes];
-              upper =
-                row &&
-                pixels[(row - 1) * scanlineLength +
-                col * pixelBytes +
-                (i % pixelBytes)];
+              upper = row && pixels[(row - 1) * scanlineLength + col * pixelBytes + (i % pixelBytes)];
               pixels[c++] = (abyte + Math.floor((left + upper) / 2)) % 256;
             }
             break;
@@ -278,17 +263,9 @@ export class PNG {
               left = i < pixelBytes ? 0 : pixels[c - pixelBytes];
               if (row === 0) {
                 upper = upperLeft = 0;
-              }
-              else {
-                upper =
-                  pixels[(row - 1) * scanlineLength +
-                  col * pixelBytes +
-                  (i % pixelBytes)];
-                upperLeft =
-                  col &&
-                  pixels[(row - 1) * scanlineLength +
-                  (col - 1) * pixelBytes +
-                  (i % pixelBytes)];
+              } else {
+                upper = pixels[(row - 1) * scanlineLength + col * pixelBytes + (i % pixelBytes)];
+                upperLeft = col && pixels[(row - 1) * scanlineLength + (col - 1) * pixelBytes + (i % pixelBytes)];
               }
               p = left + upper - upperLeft;
               pa = Math.abs(p - left);
@@ -296,11 +273,9 @@ export class PNG {
               pc = Math.abs(p - upperLeft);
               if (pa <= pb && pa <= pc) {
                 paeth = left;
-              }
-              else if (pb <= pc) {
+              } else if (pb <= pc) {
                 paeth = upper;
-              }
-              else {
+              } else {
                 paeth = upperLeft;
               }
               pixels[c++] = (abyte + paeth) % 256;
@@ -313,8 +288,7 @@ export class PNG {
           var fullPos = ((y0 + row * dy) * _this.width + x0) * pixelBytes;
           var partPos = row * scanlineLength;
           for (i = 0; i < w; i += 1) {
-            for (var j = 0; j < pixelBytes; j += 1)
-              fullPixels[fullPos++] = pixels[partPos++];
+            for (var j = 0; j < pixelBytes; j += 1) fullPixels[fullPos++] = pixels[partPos++];
             fullPos += (dx - 1) * pixelBytes;
           }
         }
@@ -334,18 +308,17 @@ export class PNG {
       */
       pass(0, 0, 8, 8); // 1
       /* NOTE these seem to follow the pattern:
-        * pass(x, 0, 2*x, 2*x);
-        * pass(0, x,   x, 2*x);
-        * with x being 4, 2, 1.
-        */
+       * pass(x, 0, 2*x, 2*x);
+       * pass(0, x,   x, 2*x);
+       * with x being 4, 2, 1.
+       */
       pass(4, 0, 8, 8); // 2
       pass(0, 4, 4, 8); // 3
       pass(2, 0, 4, 4); // 4
       pass(0, 2, 2, 4); // 5
       pass(1, 0, 2, 2); // 6
       pass(0, 1, 1, 2); // 7
-    }
-    else {
+    } else {
       pass(0, 0, 1, 1);
     }
     return fullPixels;
@@ -374,10 +347,7 @@ export class PNG {
     palette = null;
     alpha = this.hasAlphaChannel;
     if (this.palette.length) {
-      palette =
-        (_ref = this._decodedPalette) != null
-          ? _ref
-          : (this._decodedPalette = this.decodePalette());
+      palette = (_ref = this._decodedPalette) != null ? _ref : (this._decodedPalette = this.decodePalette());
       colors = 4;
       alpha = true;
     }
@@ -395,8 +365,7 @@ export class PNG {
         data[i++] = alpha ? input[k++] : 255;
         j = k;
       }
-    }
-    else {
+    } else {
       while (i < length) {
         k = palette ? pixels[i / 4] * 4 : j;
         data[i++] = input[k++];
@@ -443,8 +412,7 @@ export class PNG {
     }
     if ((prev != null ? prev.disposeOp : void 0) === APNG_DISPOSE_OP_BACKGROUND) {
       ctx.clearRect(prev.xOffset, prev.yOffset, prev.width, prev.height);
-    }
-    else if ((prev != null ? prev.disposeOp : void 0) === APNG_DISPOSE_OP_PREVIOUS) {
+    } else if ((prev != null ? prev.disposeOp : void 0) === APNG_DISPOSE_OP_PREVIOUS) {
       ctx.putImageData(prev.imageData, prev.xOffset, prev.yOffset);
     }
     if (frame.blendOp === APNG_BLEND_OP_SOURCE) {
@@ -454,12 +422,15 @@ export class PNG {
   }
 
   animate(ctx) {
-    var doFrame, frameNumber, frames, numFrames, numPlays, _ref, _this = this;
+    var doFrame,
+      frameNumber,
+      frames,
+      numFrames,
+      numPlays,
+      _ref,
+      _this = this;
     frameNumber = 0;
-    (_ref = this.animation),
-      (numFrames = _ref.numFrames),
-      (frames = _ref.frames),
-      (numPlays = _ref.numPlays);
+    (_ref = this.animation), (numFrames = _ref.numFrames), (frames = _ref.frames), (numPlays = _ref.numPlays);
     return (doFrame = function () {
       var f, frame;
       f = frameNumber++ % numFrames;
@@ -488,8 +459,7 @@ export class PNG {
     if (this.animation) {
       this.decodeFrames(ctx);
       return this.animate(ctx);
-    }
-    else {
+    } else {
       data = ctx.createImageData(this.width, this.height);
       this.copyToImageData(data, this.decodePixels());
       return ctx.putImageData(data, 0, 0);
@@ -497,7 +467,7 @@ export class PNG {
   }
 }
 
-var hasBrowserCanvas = function() {
+var hasBrowserCanvas = function () {
   if (Object.prototype.toString.call(global) === "[object Window]") {
     try {
       scratchCanvas = global.document.createElement("canvas");
@@ -512,7 +482,7 @@ var hasBrowserCanvas = function() {
 
 hasBrowserCanvas();
 
-makeImage = function(imageData) {
+makeImage = function (imageData) {
   if (hasBrowserCanvas() === true) {
     var img;
     scratchCtx.width = imageData.width;
