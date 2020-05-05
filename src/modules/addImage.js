@@ -42,66 +42,26 @@ export function addImage(jsPDFAPI, { atob, btoa }) {
     PNG: [[0x89, 0x50, 0x4e, 0x47]],
     TIFF: [
       [0x4d, 0x4d, 0x00, 0x2a], //Motorola
-      [0x49, 0x49, 0x2a, 0x00] //Intel
+      [0x49, 0x49, 0x2a, 0x00], //Intel
     ],
     JPEG: [
-      [
-        0xff,
-        0xd8,
-        0xff,
-        0xe0,
-        undefined,
-        undefined,
-        0x4a,
-        0x46,
-        0x49,
-        0x46,
-        0x00
-      ], //JFIF
-      [
-        0xff,
-        0xd8,
-        0xff,
-        0xe1,
-        undefined,
-        undefined,
-        0x45,
-        0x78,
-        0x69,
-        0x66,
-        0x00,
-        0x00
-      ], //Exif
+      [0xff, 0xd8, 0xff, 0xe0, undefined, undefined, 0x4a, 0x46, 0x49, 0x46, 0x00], //JFIF
+      [0xff, 0xd8, 0xff, 0xe1, undefined, undefined, 0x45, 0x78, 0x69, 0x66, 0x00, 0x00], //Exif
       [0xff, 0xd8, 0xff, 0xdb], //JPEG RAW
-      [0xff, 0xd8, 0xff, 0xee] //EXIF RAW
+      [0xff, 0xd8, 0xff, 0xee], //EXIF RAW
     ],
     JPEG2000: [[0x00, 0x00, 0x00, 0x0c, 0x6a, 0x50, 0x20, 0x20]],
     GIF87a: [[0x47, 0x49, 0x46, 0x38, 0x37, 0x61]],
     GIF89a: [[0x47, 0x49, 0x46, 0x38, 0x39, 0x61]],
-    WEBP: [
-      [
-        0x52,
-        0x49,
-        0x46,
-        0x46,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        0x57,
-        0x45,
-        0x42,
-        0x50
-      ]
-    ],
+    WEBP: [[0x52, 0x49, 0x46, 0x46, undefined, undefined, undefined, undefined, 0x57, 0x45, 0x42, 0x50]],
     BMP: [
       [0x42, 0x4d], //BM - Windows 3.1x, 95, NT, ... etc.
       [0x42, 0x41], //BA - OS/2 struct bitmap array
       [0x43, 0x49], //CI - OS/2 struct color icon
       [0x43, 0x50], //CP - OS/2 const color pointer
       [0x49, 0x43], //IC - OS/2 struct icon
-      [0x50, 0x54] //PT - OS/2 pointer
-    ]
+      [0x50, 0x54], //PT - OS/2 pointer
+    ],
   };
 
   /**
@@ -117,10 +77,7 @@ export function addImage(jsPDFAPI, { atob, btoa }) {
    *
    * @returns {string} filetype of Image
    */
-  var getImageFileTypeByImageData = (jsPDFAPI.__addimage__.getImageFileTypeByImageData = function(
-    imageData,
-    fallbackFormat
-  ) {
+  var getImageFileTypeByImageData = (jsPDFAPI.__addimage__.getImageFileTypeByImageData = function (imageData, fallbackFormat) {
     fallbackFormat = fallbackFormat || UNKNOWN;
     var i;
     var j;
@@ -178,7 +135,7 @@ export function addImage(jsPDFAPI, { atob, btoa }) {
   });
 
   // Image functionality ported from pdf.js
-  var putImage = function(image) {
+  var putImage = function (image) {
     var out = this.internal.write;
     var putStream = this.internal.putStream;
     var getFilters = this.internal.getFilters;
@@ -204,15 +161,13 @@ export function addImage(jsPDFAPI, { atob, btoa }) {
           // if an indexed png defines more than one colour with transparency, we've created a sMask
           (image.palette.length / 3 - 1) +
           " " +
-          ("sMask" in image && typeof image.sMask !== "undefined"
-            ? image.objectId + 2
-            : image.objectId + 1) +
-          " 0 R]"
+          ("sMask" in image && typeof image.sMask !== "undefined" ? image.objectId + 2 : image.objectId + 1) +
+          " 0 R]",
       });
     } else {
       additionalKeyValues.push({
         key: "ColorSpace",
-        value: "/" + image.colorSpace
+        value: "/" + image.colorSpace,
       });
       if (image.colorSpace === color_spaces.DEVICE_CMYK) {
         additionalKeyValues.push({ key: "Decode", value: "[1 0 1 0 1 0 1 0]" });
@@ -220,64 +175,52 @@ export function addImage(jsPDFAPI, { atob, btoa }) {
     }
     additionalKeyValues.push({
       key: "BitsPerComponent",
-      value: image.bitsPerComponent
+      value: image.bitsPerComponent,
     });
-    if (
-      "decodeParameters" in image &&
-      typeof image.decodeParameters !== "undefined"
-    ) {
+    if ("decodeParameters" in image && typeof image.decodeParameters !== "undefined") {
       additionalKeyValues.push({
         key: "DecodeParms",
-        value: "<<" + image.decodeParameters + ">>"
+        value: "<<" + image.decodeParameters + ">>",
       });
     }
     if ("transparency" in image && Array.isArray(image.transparency)) {
       var transparency = "",
         i = 0,
         len = image.transparency.length;
-      for (; i < len; i++)
-        transparency +=
-          image.transparency[i] + " " + image.transparency[i] + " ";
+      for (; i < len; i++) transparency += image.transparency[i] + " " + image.transparency[i] + " ";
 
       additionalKeyValues.push({
         key: "Mask",
-        value: "[" + transparency + "]"
+        value: "[" + transparency + "]",
       });
     }
     if (typeof image.sMask !== "undefined") {
       additionalKeyValues.push({
         key: "SMask",
-        value: image.objectId + 1 + " 0 R"
+        value: image.objectId + 1 + " 0 R",
       });
     }
 
-    var alreadyAppliedFilters =
-      typeof image.filter !== "undefined" ? ["/" + image.filter] : undefined;
+    var alreadyAppliedFilters = typeof image.filter !== "undefined" ? ["/" + image.filter] : undefined;
 
     putStream({
       data: image.data,
       additionalKeyValues: additionalKeyValues,
-      alreadyAppliedFilters: alreadyAppliedFilters
+      alreadyAppliedFilters: alreadyAppliedFilters,
     });
 
     out("endobj");
 
     // Soft mask
     if ("sMask" in image && typeof image.sMask !== "undefined") {
-      var decodeParameters =
-        "/Predictor " +
-        image.predictor +
-        " /Colors 1 /BitsPerComponent " +
-        image.bitsPerComponent +
-        " /Columns " +
-        image.width;
+      var decodeParameters = "/Predictor " + image.predictor + " /Colors 1 /BitsPerComponent " + image.bitsPerComponent + " /Columns " + image.width;
       var sMask = {
         width: image.width,
         height: image.height,
         colorSpace: "DeviceGray",
         bitsPerComponent: image.bitsPerComponent,
         decodeParameters: decodeParameters,
-        data: image.sMask
+        data: image.sMask,
       };
       if ("filter" in image) {
         sMask.filter = image.filter;
@@ -291,18 +234,20 @@ export function addImage(jsPDFAPI, { atob, btoa }) {
       //out('<< /Filter / ' + img['f'] +' /Length ' + img['pal'].length + '>>');
       //putStream(zlib.compress(img['pal']));
       putStream({
-        data: arrayBufferToBinaryString(new Uint8Array(image.palette))
+        data: arrayBufferToBinaryString(new Uint8Array(image.palette)),
       });
       out("endobj");
     }
   };
-  var putResourcesCallback = function() {
+
+  var putResourcesCallback = function () {
     var images = this.internal.collections[namespace + "images"];
     for (var i in images) {
       putImage.call(this, images[i]);
     }
   };
-  var putXObjectsDictCallback = function() {
+
+  var putXObjectsDictCallback = function () {
     var images = this.internal.collections[namespace + "images"],
       out = this.internal.write,
       image;
@@ -312,12 +257,12 @@ export function addImage(jsPDFAPI, { atob, btoa }) {
     }
   };
 
-  var checkCompressValue = function(value) {
+  var checkCompressValue = function (value) {
     if (value && typeof value === "string") value = value.toUpperCase();
     return value in jsPDFAPI.image_compression ? value : image_compression.NONE;
   };
 
-  var initialize = function() {
+  var initialize = function () {
     if (!this.internal.collections[namespace + "images"]) {
       this.internal.collections[namespace + "images"] = {};
       this.internal.events.subscribe("putResources", putResourcesCallback);
@@ -325,18 +270,21 @@ export function addImage(jsPDFAPI, { atob, btoa }) {
     }
   };
 
-  var getImages = function() {
+  var getImages = function () {
     var images = this.internal.collections[namespace + "images"];
     initialize.call(this);
     return images;
   };
-  var getImageIndex = function() {
+
+  var getImageIndex = function () {
     return Object.keys(this.internal.collections[namespace + "images"]).length;
   };
-  var notDefined = function(value) {
+
+  var notDefined = function (value) {
     return typeof value === "undefined" || value === null || value.length === 0;
   };
-  var generateAliasFromImageData = function(imageData) {
+
+  var generateAliasFromImageData = function (imageData) {
     if (typeof imageData === "string" || isArrayBufferView(imageData)) {
       return sHashCode(imageData);
     }
@@ -344,26 +292,22 @@ export function addImage(jsPDFAPI, { atob, btoa }) {
     return null;
   };
 
-  var isImageTypeSupported = function(type) {
+  var isImageTypeSupported = function (type) {
     return typeof jsPDFAPI["process" + type.toUpperCase()] === "function";
   };
 
-  var isDOMElement = function(object) {
+  var isDOMElement = function (object) {
     return typeof object === "object" && object.nodeType === 1;
   };
 
-  var getImageDataFromElement = function(element, format) {
+  var getImageDataFromElement = function (element, format) {
     //if element is an image which uses data url definition, just return the dataurl
     if (element.nodeName === "IMG" && element.hasAttribute("src")) {
       var src = "" + element.getAttribute("src");
 
       //is base64 encoded dataUrl, directly process it
       if (src.indexOf("data:image/") === 0) {
-        return atob(
-          unescape(src)
-            .split("base64,")
-            .pop()
-        );
+        return atob(unescape(src).split("base64,").pop());
       }
 
       //it is probably an url, try to load it
@@ -388,16 +332,11 @@ export function addImage(jsPDFAPI, { atob, btoa }) {
           mimeType = "image/jpeg";
           break;
       }
-      return atob(
-        element
-          .toDataURL(mimeType, 1.0)
-          .split("base64,")
-          .pop()
-      );
+      return atob(element.toDataURL(mimeType, 1.0).split("base64,").pop());
     }
   };
 
-  var checkImagesForAlias = function(alias) {
+  var checkImagesForAlias = function (alias) {
     var images = this.internal.collections[namespace + "images"];
     if (images) {
       for (var e in images) {
@@ -408,7 +347,7 @@ export function addImage(jsPDFAPI, { atob, btoa }) {
     }
   };
 
-  var determineWidthAndHeight = function(width, height, image) {
+  var determineWidthAndHeight = function (width, height, image) {
     if (!width && !height) {
       width = -96;
       height = -96;
@@ -429,7 +368,7 @@ export function addImage(jsPDFAPI, { atob, btoa }) {
     return [width, height];
   };
 
-  var writeImageToPDF = function(x, y, width, height, image, rotation) {
+  var writeImageToPDF = function (x, y, width, height, image, rotation) {
     var dims = determineWidthAndHeight.call(this, width, height, image),
       coord = this.internal.getCoordinateString,
       vcoord = this.internal.getVerticalCoordinateString;
@@ -445,40 +384,18 @@ export function addImage(jsPDFAPI, { atob, btoa }) {
       var c = Math.cos(rotation);
       var s = Math.sin(rotation);
       //like in pdf Reference do it 4 digits instead of 2
-      var f4 = function(number) {
+      var f4 = function (number) {
         return number.toFixed(4);
       };
-      var rotationTransformationMatrix = [
-        f4(c),
-        f4(s),
-        f4(s * -1),
-        f4(c),
-        0,
-        0,
-        "cm"
-      ];
+      var rotationTransformationMatrix = [f4(c), f4(s), f4(s * -1), f4(c), 0, 0, "cm"];
     }
     this.internal.write("q"); //Save graphics state
     if (rotation) {
-      this.internal.write(
-        [1, "0", "0", 1, coord(x), vcoord(y + height), "cm"].join(" ")
-      ); //Translate
+      this.internal.write([1, "0", "0", 1, coord(x), vcoord(y + height), "cm"].join(" ")); //Translate
       this.internal.write(rotationTransformationMatrix.join(" ")); //Rotate
-      this.internal.write(
-        [coord(width), "0", "0", coord(height), "0", "0", "cm"].join(" ")
-      ); //Scale
+      this.internal.write([coord(width), "0", "0", coord(height), "0", "0", "cm"].join(" ")); //Scale
     } else {
-      this.internal.write(
-        [
-          coord(width),
-          "0",
-          "0",
-          coord(height),
-          coord(x),
-          vcoord(y + height),
-          "cm"
-        ].join(" ")
-      ); //Translate and Scale
+      this.internal.write([coord(width), "0", "0", coord(height), coord(x), vcoord(y + height), "cm"].join(" ")); //Translate and Scale
     }
 
     if (this.isAdvancedAPI()) {
@@ -504,7 +421,7 @@ export function addImage(jsPDFAPI, { atob, btoa }) {
     INDEXED: "Indexed",
     PATTERN: "Pattern",
     SEPARATION: "Separation",
-    DEVICE_N: "DeviceN"
+    DEVICE_N: "DeviceN",
   });
 
   /**
@@ -519,7 +436,7 @@ export function addImage(jsPDFAPI, { atob, btoa }) {
     ASCII85_DECODE: "ASCII85Decode",
     ASCII_HEX_DECODE: "ASCIIHexDecode",
     RUN_LENGTH_DECODE: "RunLengthDecode",
-    CCITT_FAX_DECODE: "CCITTFaxDecode"
+    CCITT_FAX_DECODE: "CCITTFaxDecode",
   };
 
   /**
@@ -529,7 +446,7 @@ export function addImage(jsPDFAPI, { atob, btoa }) {
     NONE: "NONE",
     FAST: "FAST",
     MEDIUM: "MEDIUM",
-    SLOW: "SLOW"
+    SLOW: "SLOW",
   });
 
   /**
@@ -538,7 +455,7 @@ export function addImage(jsPDFAPI, { atob, btoa }) {
    * @param {string} data
    * @returns {string}
    */
-  var sHashCode = (jsPDFAPI.__addimage__.sHashCode = function(data) {
+  var sHashCode = (jsPDFAPI.__addimage__.sHashCode = function (data) {
     var hash = 0,
       i,
       len;
@@ -569,9 +486,7 @@ export function addImage(jsPDFAPI, { atob, btoa }) {
    *
    * @returns {boolean}
    */
-  var validateStringAsBase64 = (jsPDFAPI.__addimage__.validateStringAsBase64 = function(
-    possibleBase64String
-  ) {
+  var validateStringAsBase64 = (jsPDFAPI.__addimage__.validateStringAsBase64 = function (possibleBase64String) {
     possibleBase64String = possibleBase64String || "";
     possibleBase64String.toString().trim();
 
@@ -585,19 +500,11 @@ export function addImage(jsPDFAPI, { atob, btoa }) {
       result = false;
     }
 
-    if (
-      /^[A-Za-z0-9+/]+$/.test(
-        possibleBase64String.substr(0, possibleBase64String.length - 2)
-      ) === false
-    ) {
+    if (/^[A-Za-z0-9+/]+$/.test(possibleBase64String.substr(0, possibleBase64String.length - 2)) === false) {
       result = false;
     }
 
-    if (
-      /^[A-Za-z0-9/][A-Za-z0-9+/]|[A-Za-z0-9+/]=|==$/.test(
-        possibleBase64String.substr(-2)
-      ) === false
-    ) {
+    if (/^[A-Za-z0-9/][A-Za-z0-9+/]|[A-Za-z0-9+/]=|==$/.test(possibleBase64String.substr(-2)) === false) {
       result = false;
     }
     return result;
@@ -615,22 +522,18 @@ export function addImage(jsPDFAPI, { atob, btoa }) {
    * [2] format - the second part of the mime-type i.e 'png' in 'image/png'
    * [4] <data>
    */
-  var extractImageFromDataUrl = (jsPDFAPI.__addimage__.extractImageFromDataUrl = function(
-    dataUrl
-  ) {
+  var extractImageFromDataUrl = (jsPDFAPI.__addimage__.extractImageFromDataUrl = function (dataUrl) {
     dataUrl = dataUrl || "";
     var dataUrlParts = dataUrl.split("base64,");
     var result = null;
 
     if (dataUrlParts.length === 2) {
-      var extractedInfo = /^data:(\w*\/\w*);*(charset=[\w=-]*)*;*$/.exec(
-        dataUrlParts[0]
-      );
+      var extractedInfo = /^data:(\w*\/\w*);*(charset=[\w=-]*)*;*$/.exec(dataUrlParts[0]);
       if (Array.isArray(extractedInfo)) {
         result = {
           mimeType: extractedInfo[1],
           charset: extractedInfo[2],
-          data: dataUrlParts[1]
+          data: dataUrlParts[1],
         };
       }
     }
@@ -644,10 +547,8 @@ export function addImage(jsPDFAPI, { atob, btoa }) {
    * @function
    * @returns {boolean}
    */
-  var supportsArrayBuffer = (jsPDFAPI.__addimage__.supportsArrayBuffer = function() {
-    return (
-      typeof ArrayBuffer !== "undefined" && typeof Uint8Array !== "undefined"
-    );
+  var supportsArrayBuffer = (jsPDFAPI.__addimage__.supportsArrayBuffer = function () {
+    return typeof ArrayBuffer !== "undefined" && typeof Uint8Array !== "undefined";
   });
 
   /**
@@ -659,7 +560,7 @@ export function addImage(jsPDFAPI, { atob, btoa }) {
    *
    * @returns {boolean}
    */
-  jsPDFAPI.__addimage__.isArrayBuffer = function(object) {
+  jsPDFAPI.__addimage__.isArrayBuffer = function (object) {
     return supportsArrayBuffer() && object instanceof ArrayBuffer;
   };
 
@@ -671,23 +572,8 @@ export function addImage(jsPDFAPI, { atob, btoa }) {
    * @param {Object} object an Object
    * @returns {boolean}
    */
-  var isArrayBufferView = (jsPDFAPI.__addimage__.isArrayBufferView = function(
-    object
-  ) {
-    return (
-      supportsArrayBuffer() &&
-      typeof Uint32Array !== "undefined" &&
-      (object instanceof Int8Array ||
-        object instanceof Uint8Array ||
-        (typeof Uint8ClampedArray !== "undefined" &&
-          object instanceof Uint8ClampedArray) ||
-        object instanceof Int16Array ||
-        object instanceof Uint16Array ||
-        object instanceof Int32Array ||
-        object instanceof Uint32Array ||
-        object instanceof Float32Array ||
-        object instanceof Float64Array)
-    );
+  var isArrayBufferView = (jsPDFAPI.__addimage__.isArrayBufferView = function (object) {
+    return supportsArrayBuffer() && typeof Uint32Array !== "undefined" && (object instanceof Int8Array || object instanceof Uint8Array || (typeof Uint8ClampedArray !== "undefined" && object instanceof Uint8ClampedArray) || object instanceof Int16Array || object instanceof Uint16Array || object instanceof Int32Array || object instanceof Uint32Array || object instanceof Float32Array || object instanceof Float64Array);
   });
 
   /**
@@ -699,9 +585,7 @@ export function addImage(jsPDFAPI, { atob, btoa }) {
    * @param {string} BinaryString with ImageData
    * @returns {Uint8Array}
    */
-  var binaryStringToUint8Array = (jsPDFAPI.__addimage__.binaryStringToUint8Array = function(
-    binary_string
-  ) {
+  var binaryStringToUint8Array = (jsPDFAPI.__addimage__.binaryStringToUint8Array = function (binary_string) {
     var len = binary_string.length;
     var bytes = new Uint8Array(len);
     for (var i = 0; i < len; i++) {
@@ -720,18 +604,13 @@ export function addImage(jsPDFAPI, { atob, btoa }) {
    *
    * @returns {String}
    */
-  var arrayBufferToBinaryString = (jsPDFAPI.__addimage__.arrayBufferToBinaryString = function(
-    buffer
-  ) {
+  var arrayBufferToBinaryString = (jsPDFAPI.__addimage__.arrayBufferToBinaryString = function (buffer) {
     try {
       return atob(btoa(String.fromCharCode.apply(null, buffer)));
     } catch (e) {
-      if (
-        typeof Uint8Array !== "undefined" &&
-        typeof Uint8Array.prototype.reduce !== "undefined"
-      ) {
+      if (typeof Uint8Array !== "undefined" && typeof Uint8Array.prototype.reduce !== "undefined") {
         return new Uint8Array(buffer)
-          .reduce(function(data, byte) {
+          .reduce(function (data, byte) {
             return data.push(String.fromCharCode(byte)), data;
           }, [])
           .join("");
@@ -757,7 +636,7 @@ export function addImage(jsPDFAPI, { atob, btoa }) {
    *
    * @returns jsPDF
    */
-  jsPDFAPI.addImage = function() {
+  jsPDFAPI.addImage = function () {
     var imageData, format, x, y, w, h, alias, compression, rotation;
 
     imageData = arguments[0];
@@ -781,11 +660,7 @@ export function addImage(jsPDFAPI, { atob, btoa }) {
       rotation = arguments[8];
     }
 
-    if (
-      typeof imageData === "object" &&
-      !isDOMElement(imageData) &&
-      "imageData" in imageData
-    ) {
+    if (typeof imageData === "object" && !isDOMElement(imageData) && "imageData" in imageData) {
       var options = imageData;
 
       imageData = options.imageData;
@@ -811,26 +686,18 @@ export function addImage(jsPDFAPI, { atob, btoa }) {
 
     initialize.call(this);
 
-    var image = processImageData.call(
-      this,
-      imageData,
-      format,
-      alias,
-      compression
-    );
+    var image = processImageData.call(this, imageData, format, alias, compression);
 
     writeImageToPDF.call(this, x, y, w, h, image, rotation);
 
     return this;
   };
 
-  var processImageData = function(imageData, format, alias, compression) {
+  var processImageData = function (imageData, format, alias, compression) {
     var result, dataAsBinaryString;
 
-    if (
-      typeof imageData === "string" &&
-      getImageFileTypeByImageData(imageData) === UNKNOWN
-    ) {
+    const imageFileTypeByImageData = getImageFileTypeByImageData(imageData);
+    if (typeof imageData === "string" && imageFileTypeByImageData === UNKNOWN) {
       imageData = unescape(imageData);
       var tmpImageData = convertBase64ToBinaryString(imageData, false);
 
@@ -850,13 +717,7 @@ export function addImage(jsPDFAPI, { atob, btoa }) {
 
     format = getImageFileTypeByImageData(imageData, format);
     if (!isImageTypeSupported(format)) {
-      throw new Error(
-        "addImage does not support files of type '" +
-          format +
-          "', please ensure that a plugin for '" +
-          format +
-          "' support is added."
-      );
+      throw new Error("addImage does not support files of type '" + format + "', please ensure that a plugin for '" + format + "' support is added.");
     }
 
     // now do the heavy lifting
@@ -875,18 +736,17 @@ export function addImage(jsPDFAPI, { atob, btoa }) {
         }
       }
 
-      result = this["process" + format.toUpperCase()](
-        imageData,
-        getImageIndex.call(this),
-        alias,
-        checkCompressValue(compression),
-        dataAsBinaryString
-      );
+      const imageProcessorName = "process" + format.toUpperCase();
+      const imageProcessor = this[imageProcessorName];
+      const imageIndex = getImageIndex.call(this);
+      const compressionValue = checkCompressValue(compression);
+      result = imageProcessor.call(this, imageData, imageIndex, alias, compressionValue, dataAsBinaryString);
     }
 
     if (!result) {
       throw new Error("An unknown error occurred whilst processing the image.");
     }
+
     return result;
   };
 
@@ -896,10 +756,7 @@ export function addImage(jsPDFAPI, { atob, btoa }) {
    * @param {string} stringData
    * @returns {string} binary string
    */
-  var convertBase64ToBinaryString = (jsPDFAPI.__addimage__.convertBase64ToBinaryString = function(
-    stringData,
-    throwError
-  ) {
+  var convertBase64ToBinaryString = (jsPDFAPI.__addimage__.convertBase64ToBinaryString = function (stringData, throwError) {
     throwError = typeof throwError === "boolean" ? throwError : true;
     var base64Info;
     var imageData = "";
@@ -913,18 +770,15 @@ export function addImage(jsPDFAPI, { atob, btoa }) {
         imageData = atob(rawData);
       } catch (e) {
         if (throwError) {
-          if (!validateStringAsBase64(rawData)) {
-            throw new Error(
-              "Supplied Data is not a valid base64-String jsPDF.convertBase64ToBinaryString "
-            );
+          if (validateStringAsBase64(rawData)) {
+            throw new Error("atob-Error in jsPDF.convertBase64ToBinaryString " + e.message);
           } else {
-            throw new Error(
-              "atob-Error in jsPDF.convertBase64ToBinaryString " + e.message
-            );
+            throw new Error("Supplied Data is not a valid base64-String jsPDF.convertBase64ToBinaryString");
           }
         }
       }
     }
+
     return imageData;
   });
 
@@ -934,7 +788,7 @@ export function addImage(jsPDFAPI, { atob, btoa }) {
    * @param {Object} imageData
    * @returns {Object}
    */
-  jsPDFAPI.getImageProperties = function(imageData) {
+  jsPDFAPI.getImageProperties = function (imageData) {
     var image;
     var tmpImageData = "";
     var format;
@@ -943,10 +797,7 @@ export function addImage(jsPDFAPI, { atob, btoa }) {
       imageData = getImageDataFromElement(imageData);
     }
 
-    if (
-      typeof imageData === "string" &&
-      getImageFileTypeByImageData(imageData) === UNKNOWN
-    ) {
+    if (typeof imageData === "string" && getImageFileTypeByImageData(imageData) === UNKNOWN) {
       tmpImageData = convertBase64ToBinaryString(imageData, false);
 
       if (tmpImageData === "") {
@@ -957,13 +808,7 @@ export function addImage(jsPDFAPI, { atob, btoa }) {
 
     format = getImageFileTypeByImageData(imageData);
     if (!isImageTypeSupported(format)) {
-      throw new Error(
-        "addImage does not support files of type '" +
-          format +
-          "', please ensure that a plugin for '" +
-          format +
-          "' support is added."
-      );
+      throw new Error("addImage does not support files of type '" + format + "', please ensure that a plugin for '" + format + "' support is added.");
     }
 
     if (supportsArrayBuffer() && !(imageData instanceof Uint8Array)) {
@@ -980,4 +825,4 @@ export function addImage(jsPDFAPI, { atob, btoa }) {
 
     return image;
   };
-};
+}

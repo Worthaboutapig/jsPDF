@@ -58,6 +58,7 @@ export class PNG {
       }
         .call(this)
         .join("");
+
       switch (section) {
         case "IHDR":
           this.width = this.readUInt32();
@@ -177,11 +178,11 @@ export class PNG {
   }
 
   read(bytes) {
-    var i, _i, _results;
-    _results = [];
-    for (i = _i = 0; 0 <= bytes ? _i < bytes : _i > bytes; i = 0 <= bytes ? ++_i : --_i) {
+    const _results = [];
+    for (let i = (_i = 0); 0 <= bytes ? _i < bytes : _i > bytes; i = 0 <= bytes ? ++_i : --_i) {
       _results.push(this.data[this.pos++]);
     }
+
     return _results;
   }
 
