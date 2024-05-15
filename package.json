@@ -15,6 +15,7 @@
     "dist/jspdf.node.min.js",
     "dist/jspdf.worker.debug.js",
     "dist/jspdf.worker.min.js",
+    "src/**/*",
     "types/index.d.ts",
     "README.md",
     "makeFonts.js"
