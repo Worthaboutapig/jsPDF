@@ -15,6 +15,7 @@
     "dist/jspdf.node.min.js",
     "dist/jspdf.worker.debug.js",
     "dist/jspdf.worker.min.js",
+    "src/lib/**/*",
     "types/index.d.ts",
     "README.md",
     "makeFonts.js"
@@ -81,7 +82,7 @@
   },
   "scripts": {
     "start": "ws",
-    "build": "node build.js && node build.js type=node && node build.js type=worker",
+    "build": "node build.cjs && node build.cjs type=node && node build.cjs type=worker",
     "build-browser": "node build",
     "build-node": "node build type=node",
     "build-worker": "node build type=worker",
@@ -91,8 +92,8 @@
     "test-local-dist": "./node_modules/.bin/karma start karma.dist.conf.js",
     "test-node": "node build type=node minify=false && jasmine --config=spec/support/jasmine.json",
     "test-training": "node spec/utils/reference-server.js",
-    "prettier": "prettier --write build.js \"{spec,examples,src}/**/*.js\"",
-    "delete-docs": "node deletedocs.js",
+    "prettier": "prettier --write build.cjs \"{spec,examples,src}/**/*.js\"",
+    "delete-docs": "node deletedocs.cjs",
     "generate-docs": "./node_modules/.bin/jsdoc -c jsdoc.json --readme README.md"
   },
   "type": "module",
