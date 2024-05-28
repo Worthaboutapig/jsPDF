@@ -1,6 +1,6 @@
 {
   "name": "jspdf",
-  "version": "1.5.3",
+  "version": "1.5.4-alpha1",
   "homepage": "https://github.com/mrrio/jspdf",
   "description": "PDF Document creation from JavaScript",
   "main": "./src/index.js",
@@ -15,7 +15,7 @@
     "dist/jspdf.node.min.js",
     "dist/jspdf.worker.debug.js",
     "dist/jspdf.worker.min.js",
-    "src/lib/**/*",
+    "src/**/*",
     "types/index.d.ts",
     "README.md",
     "makeFonts.js"
